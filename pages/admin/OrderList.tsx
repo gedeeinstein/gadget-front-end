@@ -3,6 +3,7 @@ import { useStore } from '../../services/storeContext';
 import { formatRupiah } from '../../constants';
 import { Eye, Search } from 'lucide-react';
 import { OrderStatus } from '../../types';
+import { Link } from 'react-router-dom';
 
 export const AdminOrderList = () => {
   const { orders, updateOrderStatus } = useStore();
@@ -64,7 +65,7 @@ export const AdminOrderList = () => {
               {orders.map(order => (
                 <tr key={order.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4 font-medium text-blue-600">
-                    {order.id}
+                    <Link to={`/admin/orders/${order.id}`} className="hover:underline">{order.id}</Link>
                   </td>
                   <td className="px-6 py-4 text-slate-600">{order.date}</td>
                   <td className="px-6 py-4 font-medium text-slate-900">{order.customerName}</td>
@@ -84,9 +85,9 @@ export const AdminOrderList = () => {
                     </select>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                    <Link to={`/admin/orders/${order.id}`} className="inline-block p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                       <Eye size={18} />
-                    </button>
+                    </Link>
                   </td>
                 </tr>
               ))}

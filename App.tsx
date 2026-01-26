@@ -13,6 +13,7 @@ import { AdminDashboard } from './pages/admin/Dashboard';
 import { AdminProductList } from './pages/admin/ProductList';
 import { AdminProductForm } from './pages/admin/ProductForm';
 import { AdminOrderList } from './pages/admin/OrderList';
+import { AdminOrderDetail } from './pages/admin/OrderDetail';
 import { AdminUserList } from './pages/admin/UserList';
 
 const App = () => {
@@ -40,6 +41,7 @@ const App = () => {
               <Route path="products/new" element={<AdminProductForm />} />
               <Route path="products/edit/:id" element={<AdminProductForm />} />
               <Route path="orders" element={<AdminOrderList />} />
+              <Route path="orders/:id" element={<AdminOrderDetail />} />
               <Route path="users" element={<AdminUserList />} />
               <Route path="settings" element={<div className="p-10 font-bold text-slate-500">Settings Placeholder</div>} />
             </Route>

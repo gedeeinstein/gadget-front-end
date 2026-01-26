@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../../services/storeContext';
 import { Product, ProductVariant, PriceTier } from '../../types';
-import { Save, ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { Save, ArrowLeft, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { RichTextEditor } from '../../components/admin/RichTextEditor';
 
 const emptyPriceTier: PriceTier = {
@@ -43,6 +43,9 @@ export const AdminProductForm = () => {
   
   const [formData, setFormData] = useState<Product>(initialProduct);
   const [specsList, setSpecsList] = useState<{key: string, value: string}[]>([]);
+  
+  // State for collapsible variants. Stores the index of the currently expanded variant.
+  const [expandedVariantIndex, setExpandedVariantIndex] = useState<number | null>(0);
 
   useEffect(() => {
     if (id) {
@@ -83,23 +86,31 @@ export const AdminProductForm = () => {
 
   // Variant Handling
   const addVariant = () => {
+    const newIndex = formData.variants.length;
     setFormData(prev => ({
       ...prev,
       variants: [...prev.variants, { ...emptyVariant, id: `v${Date.now()}` }]
     }));
+    setExpandedVariantIndex(newIndex); // Auto-expand new variant
   };
 
-  const removeVariant = (index: number) => {
+  const removeVariant = (index: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent toggling accordion when clicking delete
     setFormData(prev => ({
       ...prev,
       variants: prev.variants.filter((_, i) => i !== index)
     }));
+    if (expandedVariantIndex === index) setExpandedVariantIndex(null);
   };
 
   const updateVariant = (index: number, field: keyof ProductVariant, value: any) => {
     const newVariants = [...formData.variants];
     newVariants[index] = { ...newVariants[index], [field]: value };
     setFormData(prev => ({ ...prev, variants: newVariants }));
+  };
+
+  const toggleVariant = (index: number) => {
+    setExpandedVariantIndex(prev => prev === index ? null : index);
   };
 
   // Price Tier Handling (Nested in Variant)
@@ -285,100 +296,132 @@ export const AdminProductForm = () => {
                  </button>
             </div>
             
-            <div className="space-y-6">
-                {formData.variants.map((variant, vIndex) => (
-                    <div key={variant.id || vIndex} className="border border-slate-200 rounded-lg p-4 bg-slate-50 relative group">
-                        <button 
-                            type="button" onClick={() => removeVariant(vIndex)} 
-                            className="absolute top-4 right-4 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                            <Trash2 size={20} />
-                        </button>
-
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Storage</label>
-                                <input 
-                                    type="text" placeholder="e.g. 128GB" value={variant.storage}
-                                    onChange={(e) => updateVariant(vIndex, 'storage', e.target.value)}
-                                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm outline-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Color</label>
-                                <input 
-                                    type="text" placeholder="e.g. Blue Titanium" value={variant.color}
-                                    onChange={(e) => updateVariant(vIndex, 'color', e.target.value)}
-                                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm outline-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">RAM (Optional)</label>
-                                <input 
-                                    type="text" placeholder="e.g. 8GB" value={variant.ram || ''}
-                                    onChange={(e) => updateVariant(vIndex, 'ram', e.target.value)}
-                                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm outline-none"
-                                />
-                            </div>
-                             <div>
-                                <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">SKU</label>
-                                <input 
-                                    type="text" placeholder="e.g. IPH-15-128-BLU" value={variant.sku}
-                                    onChange={(e) => updateVariant(vIndex, 'sku', e.target.value)}
-                                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm outline-none"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Prices within Variant */}
-                        <div className="bg-white rounded border border-slate-200 p-3">
-                             <div className="flex justify-between items-center mb-2">
-                                <h4 className="text-xs font-bold text-slate-500 uppercase">Prices & Stock</h4>
-                                <button type="button" onClick={() => addPriceTier(vIndex)} className="text-blue-600 text-xs font-medium hover:underline flex items-center gap-1">
-                                    <Plus size={12} /> Add Condition
+            <div className="space-y-4">
+                {formData.variants.map((variant, vIndex) => {
+                    const isExpanded = expandedVariantIndex === vIndex;
+                    const variantTitle = variant.storage && variant.color 
+                        ? `${variant.storage} - ${variant.color}` 
+                        : `New Variant ${vIndex + 1}`;
+                    
+                    return (
+                        <div key={variant.id || vIndex} className="border border-slate-200 rounded-lg bg-slate-50 overflow-hidden">
+                            {/* Variant Header / Toggle */}
+                            <div 
+                                onClick={() => toggleVariant(vIndex)}
+                                className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-white border border-slate-200 p-1 rounded-md text-slate-500">
+                                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                    </div>
+                                    <span className={`font-semibold text-sm ${!variant.storage ? 'text-slate-400 italic' : 'text-slate-800'}`}>
+                                        {variantTitle}
+                                    </span>
+                                    {variant.sku && <span className="text-xs text-slate-400 bg-slate-200 px-2 py-0.5 rounded">SKU: {variant.sku}</span>}
+                                </div>
+                                <button 
+                                    type="button" 
+                                    onClick={(e) => removeVariant(vIndex, e)} 
+                                    className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-red-50 transition-colors"
+                                    title="Delete Variant"
+                                >
+                                    <Trash2 size={18} />
                                 </button>
-                             </div>
-                             <div className="space-y-2">
-                                 {variant.prices.map((price, pIndex) => (
-                                     <div key={pIndex} className="grid grid-cols-10 gap-2 items-center">
-                                         <div className="col-span-3">
-                                             <select 
-                                                value={price.condition}
-                                                onChange={(e) => updatePriceTier(vIndex, pIndex, 'condition', e.target.value)}
-                                                className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm outline-none"
-                                             >
-                                                 {['New Official', 'New Inter', 'Second Ex-Box', 'Second Batangan'].map(c => <option key={c} value={c}>{c}</option>)}
-                                             </select>
-                                         </div>
-                                         <div className="col-span-3">
+                            </div>
+
+                            {/* Collapsible Content */}
+                            {isExpanded && (
+                                <div className="p-4 border-t border-slate-200 bg-white">
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Storage</label>
                                             <input 
-                                                type="number" placeholder="Price" value={price.price}
-                                                onChange={(e) => updatePriceTier(vIndex, pIndex, 'price', parseInt(e.target.value) || 0)}
-                                                className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm outline-none"
+                                                type="text" placeholder="e.g. 128GB" value={variant.storage}
+                                                onChange={(e) => updateVariant(vIndex, 'storage', e.target.value)}
+                                                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm outline-none focus:border-blue-500"
                                             />
-                                         </div>
-                                         <div className="col-span-2">
-                                             <select 
-                                                value={price.stock}
-                                                onChange={(e) => updatePriceTier(vIndex, pIndex, 'stock', e.target.value)}
-                                                className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm outline-none"
-                                             >
-                                                 <option value="ready">Ready</option>
-                                                 <option value="low">Low</option>
-                                                 <option value="empty">Empty</option>
-                                             </select>
-                                         </div>
-                                         <div className="col-span-2 flex justify-end">
-                                             <button type="button" onClick={() => removePriceTier(vIndex, pIndex)} className="text-slate-400 hover:text-red-500">
-                                                 <Trash2 size={16} />
-                                             </button>
-                                         </div>
-                                     </div>
-                                 ))}
-                             </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Color</label>
+                                            <input 
+                                                type="text" placeholder="e.g. Blue Titanium" value={variant.color}
+                                                onChange={(e) => updateVariant(vIndex, 'color', e.target.value)}
+                                                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm outline-none focus:border-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">RAM (Optional)</label>
+                                            <input 
+                                                type="text" placeholder="e.g. 8GB" value={variant.ram || ''}
+                                                onChange={(e) => updateVariant(vIndex, 'ram', e.target.value)}
+                                                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm outline-none focus:border-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">SKU</label>
+                                            <input 
+                                                type="text" placeholder="e.g. IPH-15-128-BLU" value={variant.sku}
+                                                onChange={(e) => updateVariant(vIndex, 'sku', e.target.value)}
+                                                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm outline-none focus:border-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Prices within Variant */}
+                                    <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                                        <div className="flex justify-between items-center mb-3">
+                                            <h4 className="text-xs font-bold text-slate-600 uppercase">Prices & Stock Conditions</h4>
+                                            <button type="button" onClick={() => addPriceTier(vIndex)} className="text-blue-600 text-xs font-medium hover:underline flex items-center gap-1">
+                                                <Plus size={12} /> Add Condition
+                                            </button>
+                                        </div>
+                                        <div className="space-y-3">
+                                            {variant.prices.map((price, pIndex) => (
+                                                <div key={pIndex} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-white p-2 rounded border border-slate-100 shadow-sm">
+                                                    <div className="md:col-span-4">
+                                                        <select 
+                                                            value={price.condition}
+                                                            onChange={(e) => updatePriceTier(vIndex, pIndex, 'condition', e.target.value)}
+                                                            className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm outline-none focus:border-blue-500"
+                                                        >
+                                                            {['New Official', 'New Inter', 'Second Ex-Box', 'Second Batangan'].map(c => <option key={c} value={c}>{c}</option>)}
+                                                        </select>
+                                                    </div>
+                                                    <div className="md:col-span-4">
+                                                        <div className="relative">
+                                                            <span className="absolute left-2 top-1.5 text-slate-400 text-xs">Rp</span>
+                                                            <input 
+                                                                type="number" placeholder="Price" value={price.price}
+                                                                onChange={(e) => updatePriceTier(vIndex, pIndex, 'price', parseInt(e.target.value) || 0)}
+                                                                className="w-full pl-8 pr-2 py-1.5 border border-slate-200 rounded text-sm outline-none focus:border-blue-500"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="md:col-span-3">
+                                                        <select 
+                                                            value={price.stock}
+                                                            onChange={(e) => updatePriceTier(vIndex, pIndex, 'stock', e.target.value)}
+                                                            className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm outline-none focus:border-blue-500"
+                                                        >
+                                                            <option value="ready">Ready</option>
+                                                            <option value="low">Low</option>
+                                                            <option value="empty">Empty</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="md:col-span-1 flex justify-end">
+                                                        <button type="button" onClick={() => removePriceTier(vIndex, pIndex)} className="text-slate-400 hover:text-red-500 p-1 hover:bg-red-50 rounded transition-colors">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </section>
 
