@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '../types';
 import { formatRupiah } from '../constants';
-import { BadgeCheck, ArrowRight } from 'lucide-react';
+import { BadgeCheck, ArrowRight, ShieldCheck } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -45,6 +45,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <h3 className="font-bold text-slate-900 text-lg mb-2 leading-tight group-hover:text-blue-600 transition-colors">
           {product.name}
         </h3>
+
+        {product.warranty && (
+          <div className="flex items-center gap-1 text-[10px] text-green-700 font-medium mb-3 bg-green-50 w-fit px-2 py-1 rounded-full border border-green-100">
+            <ShieldCheck size={12} /> {product.warranty}
+          </div>
+        )}
         
         <div className="mt-auto">
           <div className="text-xs text-slate-500 mb-1">Starts from</div>

@@ -125,8 +125,9 @@ export const Layout = () => {
             </div>
           </div>
         </div>
-        <div className="border-t border-slate-800 mt-10 pt-6 text-center text-xs text-slate-500">
-          &copy; {new Date().getFullYear()} Anyelir Gadget Store. All rights reserved.
+        <div className="border-t border-slate-800 mt-10 pt-6 text-center text-xs text-slate-500 flex flex-col md:flex-row justify-between items-center px-4">
+          <span>&copy; {new Date().getFullYear()} Anyelir Gadget Store. All rights reserved.</span>
+          <Link to="/admin" className="mt-2 md:mt-0 hover:text-slate-300 transition-colors">Admin Login</Link>
         </div>
       </footer>
     </div>

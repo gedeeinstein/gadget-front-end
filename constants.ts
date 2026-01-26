@@ -11,6 +11,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     category: 'Phone',
     releaseYear: 2023,
     description: 'The first iPhone to feature an aerospace-grade titanium design, using the same alloy that spacecraft use for missions to Mars.',
+    warranty: '1 Year Official iBox',
     specs: {
       'Chip': 'A17 Pro chip',
       'Display': '6.1-inch Super Retina XDR',
@@ -50,6 +51,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     category: 'Phone',
     releaseYear: 2024,
     description: 'Welcome to the era of mobile AI. With Galaxy S24 Ultra in your hands, you can unleash whole new levels of creativity.',
+    warranty: '1 Year SEIN Indonesia',
     specs: {
       'Chip': 'Snapdragon 8 Gen 3',
       'Display': '6.8-inch QHD+ Dynamic AMOLED 2X',
@@ -90,6 +92,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     category: 'Tablet',
     releaseYear: 2022,
     description: 'Light. Bright. Full of might. Supercharged by the Apple M1 chip.',
+    warranty: '1 Year International',
     specs: {
       'Chip': 'M1 chip',
       'Display': '10.9-inch Liquid Retina',
@@ -119,6 +122,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     category: 'Phone',
     releaseYear: 2024,
     description: 'Co-engineered with Leica. A new chapter in mobile photography.',
+    warranty: '15 Months Official Xiaomi',
     specs: {
       'Chip': 'Snapdragon 8 Gen 3',
       'Display': '6.36" AMOLED',

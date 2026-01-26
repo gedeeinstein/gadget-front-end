@@ -31,6 +31,11 @@ export interface Product {
   variants: ProductVariant[];
   isFeatured?: boolean;
   releaseYear: number;
+  // SEO Fields
+  metaTitle?: string;
+  metaDescription?: string;
+  // Additional Info
+  warranty?: string;
 }
 
 export interface CartItem {
@@ -65,4 +70,13 @@ export interface User {
   role: Role;
   status: 'Active' | 'Inactive';
   lastLogin: string;
+}
+
+export interface ActivityLog {
+  id: string;
+  user: string;
+  action: string; // e.g., "Created Product", "Updated Order"
+  target: string; // e.g., "iPhone 15 Pro", "Order #123"
+  timestamp: string;
+  type: 'info' | 'success' | 'warning' | 'danger';
 }

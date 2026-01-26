@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../../services/storeContext';
 import { Product, ProductVariant, PriceTier } from '../../types';
 import { Save, ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { RichTextEditor } from '../../components/admin/RichTextEditor';
 
 const emptyPriceTier: PriceTier = {
   condition: 'New Official',
@@ -29,7 +30,10 @@ const initialProduct: Product = {
   baseImage: '',
   variants: [],
   releaseYear: new Date().getFullYear(),
-  isFeatured: false
+  isFeatured: false,
+  metaTitle: '',
+  metaDescription: '',
+  warranty: ''
 };
 
 export const AdminProductForm = () => {
@@ -185,6 +189,14 @@ export const AdminProductForm = () => {
                         className="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none"
                     />
                 </div>
+                 <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Warranty Info</label>
+                    <input 
+                        type="text" name="warranty" value={formData.warranty || ''} onChange={handleChange}
+                        className="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none"
+                        placeholder="e.g. 1 Year Official"
+                    />
+                </div>
                  <div className="flex items-center pt-6">
                      <label className="flex items-center gap-2 cursor-pointer">
                          <input type="checkbox" name="isFeatured" checked={formData.isFeatured} onChange={handleCheckboxChange} className="w-5 h-5 text-blue-600 rounded" />
@@ -193,9 +205,9 @@ export const AdminProductForm = () => {
                 </div>
                 <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
-                    <textarea 
-                        name="description" rows={4} required value={formData.description} onChange={handleChange}
-                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    <RichTextEditor 
+                      value={formData.description} 
+                      onChange={(val) => setFormData(prev => ({...prev, description: val}))} 
                     />
                 </div>
                  <div className="md:col-span-2">
@@ -204,6 +216,29 @@ export const AdminProductForm = () => {
                         type="url" name="baseImage" required value={formData.baseImage} onChange={handleChange}
                         placeholder="https://..."
                         className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                </div>
+            </div>
+        </section>
+
+         {/* SEO Settings */}
+         <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <h2 className="text-lg font-bold text-slate-900 mb-4 border-b border-slate-100 pb-2">SEO Settings</h2>
+            <div className="grid grid-cols-1 gap-6">
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Meta Title</label>
+                    <input 
+                        type="text" name="metaTitle" value={formData.metaTitle || ''} onChange={handleChange}
+                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="Title to appear in search engines"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Meta Description</label>
+                    <textarea 
+                        name="metaDescription" rows={3} value={formData.metaDescription || ''} onChange={handleChange}
+                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="Description for search results"
                     />
                 </div>
             </div>
