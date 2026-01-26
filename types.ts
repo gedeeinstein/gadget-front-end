@@ -55,3 +55,14 @@ export interface Order {
   status: OrderStatus;
   items: CartItem[];
 }
+
+export type Role = 'Admin' | 'Editor' | 'Viewer';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  status: 'Active' | 'Inactive';
+  lastLogin: string;
+}

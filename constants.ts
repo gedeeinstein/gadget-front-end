@@ -1,4 +1,4 @@
-import { Product, Order } from './types';
+import { Product, Order, User } from './types';
 
 export const STORE_PHONE = "6281234567890";
 
@@ -169,6 +169,33 @@ export const SAMPLE_ORDERS: Order[] = [
     total: 9499000,
     status: 'Shipped',
     items: []
+  }
+];
+
+export const SAMPLE_USERS: User[] = [
+  {
+    id: 'u1',
+    name: 'Super Admin',
+    email: 'admin@anyelir.com',
+    role: 'Admin',
+    status: 'Active',
+    lastLogin: '2024-03-10 09:30'
+  },
+  {
+    id: 'u2',
+    name: 'Sales Staff',
+    email: 'sales@anyelir.com',
+    role: 'Editor',
+    status: 'Active',
+    lastLogin: '2024-03-10 08:15'
+  },
+  {
+    id: 'u3',
+    name: 'Inventory Viewer',
+    email: 'inventory@anyelir.com',
+    role: 'Viewer',
+    status: 'Inactive',
+    lastLogin: '2024-03-01 14:00'
   }
 ];
 
