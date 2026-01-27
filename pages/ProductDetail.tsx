@@ -52,7 +52,7 @@ export const ProductDetail = () => {
       variantId: selectedVariant.id,
       condition: selectedPriceTier.condition,
       name: product.name,
-      image: product.baseImage,
+      image: selectedVariant.image || product.baseImage,
       specSummary: `${selectedVariant.storage} - ${selectedVariant.color}`,
       price: selectedPriceTier.promoPrice || selectedPriceTier.price,
       quantity: 1
@@ -64,6 +64,9 @@ export const ProductDetail = () => {
     const message = `Halo Anyelir Gadget, saya mau order:\n\n*${product.name}*\nVariant: ${selectedVariant.storage} ${selectedVariant.color}\nKondisi: ${selectedPriceTier.condition}\nHarga: ${formatRupiah(selectedPriceTier.promoPrice || selectedPriceTier.price)}\n\nApakah stock tersedia?`;
     window.open(`https://wa.me/${STORE_PHONE}?text=${encodeURIComponent(message)}`, '_blank');
   };
+
+  // Determine active display image
+  const displayImage = selectedVariant.image || product.baseImage;
 
   return (
     <div className="bg-slate-50 min-h-screen py-10">
@@ -78,11 +81,12 @@ export const ProductDetail = () => {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
             {/* Image Gallery */}
-            <div className="p-8 bg-slate-100 flex items-center justify-center relative">
+            <div className="p-8 bg-slate-100 flex items-center justify-center relative min-h-[400px]">
               <img 
-                src={product.baseImage} 
+                key={displayImage} // Force fade-in animation when image changes
+                src={displayImage} 
                 alt={product.name} 
-                className="max-h-[500px] w-auto object-contain mix-blend-multiply"
+                className="max-h-[500px] w-auto object-contain mix-blend-multiply transition-opacity duration-300 animate-in fade-in"
               />
             </div>
 
@@ -119,14 +123,20 @@ export const ProductDetail = () => {
                         key={v.id}
                         onClick={() => handleVariantChange(v.id)}
                         className={`
-                          p-3 rounded-lg border text-left text-sm transition-all
+                          p-3 rounded-lg border text-left text-sm transition-all flex items-center gap-2
                           ${selectedVariant.id === v.id 
                             ? 'border-blue-600 bg-blue-50 ring-1 ring-blue-600' 
                             : 'border-slate-200 hover:border-slate-300'}
                         `}
                       >
-                        <div className="font-bold text-slate-900">{v.storage}</div>
-                        <div className="text-slate-500 text-xs">{v.color}</div>
+                         {/* Optional tiny preview if available */}
+                         {v.image && (
+                            <img src={v.image} alt="" className="w-8 h-8 rounded object-cover border border-slate-200" />
+                         )}
+                         <div>
+                            <div className="font-bold text-slate-900">{v.storage}</div>
+                            <div className="text-slate-500 text-xs">{v.color}</div>
+                         </div>
                       </button>
                     ))}
                   </div>

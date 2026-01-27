@@ -57,7 +57,7 @@ const Sparkline = ({ data, color = "#3b82f6" }: { data: number[], color?: string
     )
 }
 
-const LogItem = ({ log }: { log: ActivityLog }) => {
+const LogItem: React.FC<{ log: ActivityLog }> = ({ log }) => {
   const getColor = (type: ActivityLog['type']) => {
     switch (type) {
       case 'success': return 'bg-green-100 text-green-700';

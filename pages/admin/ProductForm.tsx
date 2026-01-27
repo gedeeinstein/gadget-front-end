@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../../services/storeContext';
 import { Product, ProductVariant, PriceTier } from '../../types';
-import { Save, ArrowLeft, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Save, ArrowLeft, Plus, Trash2, ChevronDown, ChevronUp, Image as ImageIcon } from 'lucide-react';
 import { RichTextEditor } from '../../components/admin/RichTextEditor';
 
 const emptyPriceTier: PriceTier = {
@@ -16,6 +16,7 @@ const emptyVariant: ProductVariant = {
   storage: '',
   color: '',
   sku: '',
+  image: '',
   prices: [{ ...emptyPriceTier }]
 };
 
@@ -314,9 +315,14 @@ export const AdminProductForm = () => {
                                     <div className="bg-white border border-slate-200 p-1 rounded-md text-slate-500">
                                         {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                     </div>
-                                    <span className={`font-semibold text-sm ${!variant.storage ? 'text-slate-400 italic' : 'text-slate-800'}`}>
-                                        {variantTitle}
-                                    </span>
+                                    <div className="flex items-center gap-3">
+                                        {variant.image && (
+                                            <img src={variant.image} alt="" className="w-8 h-8 object-cover rounded border border-slate-200" />
+                                        )}
+                                        <span className={`font-semibold text-sm ${!variant.storage ? 'text-slate-400 italic' : 'text-slate-800'}`}>
+                                            {variantTitle}
+                                        </span>
+                                    </div>
                                     {variant.sku && <span className="text-xs text-slate-400 bg-slate-200 px-2 py-0.5 rounded">SKU: {variant.sku}</span>}
                                 </div>
                                 <button 
@@ -332,7 +338,7 @@ export const AdminProductForm = () => {
                             {/* Collapsible Content */}
                             {isExpanded && (
                                 <div className="p-4 border-t border-slate-200 bg-white">
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                                         <div>
                                             <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Storage</label>
                                             <input 
@@ -365,6 +371,25 @@ export const AdminProductForm = () => {
                                                 className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm outline-none focus:border-blue-500"
                                             />
                                         </div>
+                                    </div>
+
+                                    <div className="mb-6">
+                                        <label className="block text-xs font-bold text-slate-500 mb-1 uppercase flex items-center gap-2">
+                                            <ImageIcon size={14} /> Variant Image (Optional)
+                                        </label>
+                                        <div className="flex gap-4 items-center">
+                                            <input 
+                                                type="text" placeholder="https://..." value={variant.image || ''}
+                                                onChange={(e) => updateVariant(vIndex, 'image', e.target.value)}
+                                                className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-md text-sm outline-none focus:border-blue-500"
+                                            />
+                                            {variant.image && (
+                                                <div className="w-10 h-10 border border-slate-200 rounded overflow-hidden flex-shrink-0">
+                                                    <img src={variant.image} alt="Preview" className="w-full h-full object-cover" />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <p className="text-[10px] text-slate-400 mt-1">Leave empty to use the product's main image.</p>
                                     </div>
 
                                     {/* Prices within Variant */}
