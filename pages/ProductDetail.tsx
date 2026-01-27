@@ -201,7 +201,19 @@ export const ProductDetail = () => {
           {/* Detailed Info Tabs */}
           <div className="border-t border-slate-200 p-8 lg:p-12">
             <h3 className="text-xl font-bold mb-4">Description</h3>
-            <p className="text-slate-600 leading-relaxed mb-8">{product.description}</p>
+            <div 
+              className="text-slate-600 leading-relaxed mb-8 text-sm 
+                [&>p]:mb-4 
+                [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-4
+                [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-4
+                [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:mb-2 
+                [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mb-2 
+                [&>h3]:text-lg [&>h3]:font-bold [&>h3]:mb-2
+                [&>a]:text-blue-600 [&>a]:underline
+                [&>blockquote]:border-l-4 [&>blockquote]:border-slate-300 [&>blockquote]:pl-4 [&>blockquote]:italic [&>blockquote]:mb-4
+              "
+              dangerouslySetInnerHTML={{ __html: product.description }}
+            />
             
             <h3 className="text-xl font-bold mb-4">Specifications</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
