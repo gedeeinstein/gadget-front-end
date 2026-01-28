@@ -37,10 +37,10 @@ async function fetchClient<T>(endpoint: string, { data, ...customConfig }: Fetch
         return {} as T;
     }
 
-    const responseData = await response.json();
+    const responseData = await response.json().catch(() => null);
 
     if (!response.ok) {
-      throw new Error(responseData.message || 'API request failed');
+      throw new Error(responseData?.message || `API request failed with status ${response.status}`);
     }
 
     return responseData;
