@@ -11,6 +11,11 @@ A premium e-commerce platform for phones and gadgets featuring real-time priceli
 - **WhatsApp Checkout**: Direct integration to send formatted orders to WhatsApp.
 - **Responsive Design**: Mobile-first UI/UX with specific mobile navigation.
 
+## 📚 Documentation
+
+- [Development Guide](./GUIDE.md): Detailed guide on Architecture, API Integration, and creating CRUD modules.
+- [Database Schema](./database.md): Reference for the database structure.
+
 ## 🚀 Deployment Guide
 
 ### Option 1: Vercel (Recommended)

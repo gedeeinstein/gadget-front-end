@@ -31,27 +31,35 @@ export const AdminUserList = () => {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingUser) {
-      updateUser(editingUser.id, { name, email, role, status });
-    } else {
-      const newUser: User = {
-        id: `u${Date.now()}`,
-        name,
-        email,
-        role,
-        status,
-        lastLogin: 'Never'
-      };
-      addUser(newUser);
+    try {
+      if (editingUser) {
+        await updateUser(editingUser.id, { name, email, role, status });
+      } else {
+        const newUser: User = {
+          id: `u${Date.now()}`,
+          name,
+          email,
+          role,
+          status,
+          lastLogin: 'Never'
+        };
+        await addUser(newUser);
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      alert("Failed to save user.");
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
-      deleteUser(id);
+      try {
+        await deleteUser(id);
+      } catch (error) {
+        alert("Failed to delete user.");
+      }
     }
   };
 

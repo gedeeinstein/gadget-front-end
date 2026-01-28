@@ -22,8 +22,12 @@ export const AdminOrderDetail = () => {
     );
   }
 
-  const handleStatusChange = (newStatus: string) => {
-    updateOrderStatus(order.id, newStatus as OrderStatus);
+  const handleStatusChange = async (newStatus: string) => {
+    try {
+      await updateOrderStatus(order.id, newStatus as OrderStatus);
+    } catch (error) {
+      alert("Failed to update status");
+    }
   };
 
   const getStatusColor = (status: OrderStatus) => {

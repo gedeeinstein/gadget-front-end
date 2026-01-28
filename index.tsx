@@ -1,6 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { makeServer } from './services/mockServer';
+
+// Initialize mock server
+if (process.env.NODE_ENV === 'development') {
+  makeServer();
+}
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

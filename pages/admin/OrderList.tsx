@@ -8,8 +8,12 @@ import { Link } from 'react-router-dom';
 export const AdminOrderList = () => {
   const { orders, updateOrderStatus } = useStore();
 
-  const handleStatusChange = (id: string, newStatus: string) => {
-    updateOrderStatus(id, newStatus as OrderStatus);
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    try {
+      await updateOrderStatus(id, newStatus as OrderStatus);
+    } catch (error) {
+      alert("Failed to update status");
+    }
   };
 
   const getStatusColor = (status: OrderStatus) => {
