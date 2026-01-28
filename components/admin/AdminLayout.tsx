@@ -1,10 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Package, ShoppingBag, Settings, LogOut, Menu, X, Smartphone, Users } from 'lucide-react';
+import { useStore } from '../../services/storeContext';
 
 export const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
+  const { logAction } = useStore();
+
+  // Simulate logging a login event once per session
+  useEffect(() => {
+    const sessionKey = 'ag_admin_session_logged';
+    if (!sessionStorage.getItem(sessionKey)) {
+        logAction('Super Admin', 'System Login', 'Admin Dashboard', 'info');
+        sessionStorage.setItem(sessionKey, 'true');
+    }
+  }, [logAction]);
 
   const isActive = (path: string) => location.pathname === path ? "bg-slate-800 text-blue-400" : "text-slate-400 hover:bg-slate-800 hover:text-white";
 

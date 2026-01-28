@@ -1,7 +1,7 @@
 import React from 'react';
 import { useStore } from '../../services/storeContext';
 import { formatRupiah } from '../../constants';
-import { TrendingUp, ShoppingBag, Package, Users, AlertTriangle, Activity, Clock } from 'lucide-react';
+import { TrendingUp, ShoppingBag, Package, Users, AlertTriangle, Activity, Clock, LogIn, PlusCircle, Trash2, Edit2, CheckCircle } from 'lucide-react';
 import { ActivityLog } from '../../types';
 
 // Simple Bar Chart Component for Top Products
@@ -60,11 +60,21 @@ const Sparkline = ({ data, color = "#3b82f6" }: { data: number[], color?: string
 const LogItem: React.FC<{ log: ActivityLog }> = ({ log }) => {
   const getColor = (type: ActivityLog['type']) => {
     switch (type) {
-      case 'success': return 'bg-green-100 text-green-700';
-      case 'warning': return 'bg-orange-100 text-orange-700';
-      case 'danger': return 'bg-red-100 text-red-700';
-      default: return 'bg-blue-100 text-blue-700';
+      case 'success': return 'bg-green-100 text-green-600';
+      case 'warning': return 'bg-orange-100 text-orange-600';
+      case 'danger': return 'bg-red-100 text-red-600';
+      default: return 'bg-blue-100 text-blue-600';
     }
+  };
+
+  const getIcon = (action: string) => {
+      const lowerAction = action.toLowerCase();
+      if (lowerAction.includes('login')) return <LogIn size={16} />;
+      if (lowerAction.includes('created') || lowerAction.includes('added') || lowerAction.includes('imported')) return <PlusCircle size={16} />;
+      if (lowerAction.includes('deleted') || lowerAction.includes('removed')) return <Trash2 size={16} />;
+      if (lowerAction.includes('updated') || lowerAction.includes('edited')) return <Edit2 size={16} />;
+      if (lowerAction.includes('status') || lowerAction.includes('completed')) return <CheckCircle size={16} />;
+      return <Activity size={16} />;
   };
 
   const getTimeAgo = (dateStr: string) => {
@@ -79,7 +89,9 @@ const LogItem: React.FC<{ log: ActivityLog }> = ({ log }) => {
 
   return (
     <div className="flex gap-4 items-start border-b border-slate-50 pb-4 last:border-0 last:pb-0">
-      <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${log.type === 'danger' ? 'bg-red-500' : log.type === 'success' ? 'bg-green-500' : 'bg-blue-500'}`} />
+      <div className={`mt-1 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${getColor(log.type)}`}>
+        {getIcon(log.action)}
+      </div>
       <div className="flex-1">
         <p className="text-sm font-medium text-slate-800">
           <span className="font-bold">{log.user}</span> {log.action.toLowerCase()} <span className="font-semibold text-slate-900">{log.target}</span>
