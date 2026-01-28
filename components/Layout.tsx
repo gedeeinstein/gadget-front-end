@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { ShoppingCart, Menu, X, Search, Smartphone, ShieldCheck, MapPin, Phone } from 'lucide-react';
+import { ShoppingCart, Menu, X, Search, Smartphone, ShieldCheck, MapPin, Phone, TableProperties } from 'lucide-react';
 import { useCart } from '../services/cartContext';
 
 export const Layout = () => {
@@ -41,7 +41,8 @@ export const Layout = () => {
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center space-x-8">
               <Link to="/" className={isActive('/')}>Home</Link>
-              <Link to="/catalog" className={isActive('/catalog')}>Pricelist</Link>
+              <Link to="/pricelist" className={isActive('/pricelist')}>Pricelist</Link>
+              <Link to="/catalog" className={isActive('/catalog')}>Catalog</Link>
               <Link to="/services" className={isActive('/services')}>Services</Link>
               <Link to="/trade-in" className={isActive('/trade-in')}>Trade In</Link>
             </div>
@@ -74,7 +75,8 @@ export const Layout = () => {
           <div className="md:hidden bg-white border-t border-slate-100 py-4 px-4 shadow-lg">
             <div className="flex flex-col space-y-4">
               <Link to="/" className="text-slate-800 font-medium" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
-              <Link to="/catalog" className="text-slate-800 font-medium" onClick={() => setIsMobileMenuOpen(false)}>Pricelist</Link>
+              <Link to="/pricelist" className="text-slate-800 font-medium" onClick={() => setIsMobileMenuOpen(false)}>Pricelist</Link>
+              <Link to="/catalog" className="text-slate-800 font-medium" onClick={() => setIsMobileMenuOpen(false)}>Catalog</Link>
               <Link to="/services" className="text-slate-800 font-medium" onClick={() => setIsMobileMenuOpen(false)}>Services</Link>
               <Link to="/trade-in" className="text-slate-800 font-medium" onClick={() => setIsMobileMenuOpen(false)}>Trade In</Link>
               <div className="border-t pt-4">
@@ -102,7 +104,8 @@ export const Layout = () => {
           <div>
             <h4 className="text-white font-medium mb-4">Quick Links</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/catalog" className="hover:text-blue-400">Pricelist</Link></li>
+              <li><Link to="/pricelist" className="hover:text-blue-400">Pricelist</Link></li>
+              <li><Link to="/catalog" className="hover:text-blue-400">Catalog</Link></li>
               <li><Link to="/services" className="hover:text-blue-400">Repair Service</Link></li>
               <li><Link to="/trade-in" className="hover:text-blue-400">Trade In</Link></li>
               <li><Link to="/contact" className="hover:text-blue-400">Contact Us</Link></li>
