@@ -8,6 +8,7 @@ interface StoreContextType {
   users: User[];
   logs: ActivityLog[];
   addProduct: (product: Product) => void;
+  bulkAddProducts: (products: Product[]) => void;
   updateProduct: (id: string, product: Partial<Product>) => void;
   deleteProduct: (id: string) => void;
   updateOrderStatus: (id: string, status: OrderStatus) => void;
@@ -49,6 +50,11 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const addProduct = (product: Product) => {
     setProducts(prev => [product, ...prev]);
     logAction('Super Admin', 'Created Product', product.name, 'success');
+  };
+
+  const bulkAddProducts = (newProducts: Product[]) => {
+    setProducts(prev => [...newProducts, ...prev]);
+    logAction('Super Admin', 'Bulk Imported', `${newProducts.length} Products`, 'success');
   };
 
   const updateProduct = (id: string, updates: Partial<Product>) => {
@@ -96,7 +102,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       orders, 
       users,
       logs,
-      addProduct, 
+      addProduct,
+      bulkAddProducts,
       updateProduct, 
       deleteProduct, 
       updateOrderStatus,

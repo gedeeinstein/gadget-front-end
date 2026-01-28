@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../../services/storeContext';
 import { formatRupiah } from '../../constants';
-import { Edit, Trash2, Plus, Search, Zap, X, Save } from 'lucide-react';
-import { Product } from '../../types';
+import { Edit, Trash2, Plus, Search, Zap, X, Save, Upload, FileSpreadsheet, Download } from 'lucide-react';
+import { Product, ProductVariant, PriceTier, Brand, Category, Condition } from '../../types';
 
 export const AdminProductList = () => {
-  const { products, deleteProduct, updateProduct } = useStore();
+  const { products, deleteProduct, updateProduct, bulkAddProducts } = useStore();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Quick Edit State
   const [quickEditProduct, setQuickEditProduct] = useState<Product | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   
   const handleDelete = (id: string) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
@@ -29,13 +31,159 @@ export const AdminProductList = () => {
     }
   };
 
+  // --- CSV Import Logic ---
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const parseCSVLine = (line: string): string[] => {
+    // Basic CSV regex to handle commas inside quotes
+    const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+    if (!matches) return line.split(',');
+    return matches.map(m => m.replace(/^"|"$/g, ''));
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      if (!text) return;
+
+      try {
+        const lines = text.split('\n').filter(line => line.trim() !== '');
+        const header = lines[0].toLowerCase().split(',').map(h => h.trim());
+        
+        // Expected headers: name, brand, category, description, baseImage, storage, color, condition, price, stock
+        
+        const tempProducts: Record<string, Product> = {};
+
+        for (let i = 1; i < lines.length; i++) {
+            // Simple split by comma, naive implementation. For robust CSV, use a library.
+            // Assuming strict format for this feature:
+            const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+            
+            // Map values based on assumed index (simple) or header mapping (better)
+            // For simplicity in this demo, we assume fixed column order:
+            // 0:name, 1:brand, 2:category, 3:description, 4:baseImage, 5:storage, 6:color, 7:condition, 8:price, 9:stock
+            
+            if (values.length < 9) continue;
+
+            const name = values[0];
+            const brand = values[1] as Brand;
+            const category = values[2] as Category;
+            const description = values[3];
+            const baseImage = values[4];
+            const storage = values[5];
+            const color = values[6];
+            const condition = values[7] as Condition;
+            const price = parseInt(values[8]) || 0;
+            const stock = (values[9] || 'ready') as 'ready' | 'low' | 'empty';
+
+            const productKey = name.toLowerCase();
+
+            if (!tempProducts[productKey]) {
+                tempProducts[productKey] = {
+                    id: `p-imp-${Date.now()}-${i}`,
+                    name,
+                    slug: name.toLowerCase().replace(/\s+/g, '-'),
+                    brand,
+                    category,
+                    description,
+                    baseImage,
+                    variants: [],
+                    specs: {},
+                    releaseYear: new Date().getFullYear(),
+                    isFeatured: false
+                };
+            }
+
+            // Find or Create Variant
+            let variant = tempProducts[productKey].variants.find(v => v.storage === storage && v.color === color);
+            
+            if (!variant) {
+                variant = {
+                    id: `v-imp-${Date.now()}-${i}`,
+                    storage,
+                    color,
+                    sku: `${name.substring(0,3).toUpperCase()}-${storage}-${color.substring(0,3).toUpperCase()}`,
+                    prices: []
+                };
+                tempProducts[productKey].variants.push(variant);
+            }
+
+            // Add Price Tier
+            variant.prices.push({
+                condition,
+                price,
+                stock
+            });
+        }
+
+        const newProducts = Object.values(tempProducts);
+        
+        if (newProducts.length > 0) {
+            bulkAddProducts(newProducts);
+            alert(`Successfully imported ${newProducts.length} products with ${lines.length - 1} rows of data.`);
+        } else {
+            alert("No valid product data found in CSV.");
+        }
+
+      } catch (error) {
+        console.error("CSV Import Error", error);
+        alert("Failed to parse CSV. Please check the format.");
+      }
+      
+      // Reset input
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    reader.readAsText(file);
+  };
+
+  const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
   return (
     <div>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-slate-900">Products</h1>
-        <Link to="/admin/products/new" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors">
-          <Plus size={18} /> Add Product
-        </Link>
+        <div className="flex gap-2">
+            <button 
+                onClick={handleImportClick}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+            >
+                <Upload size={18} /> Import CSV
+            </button>
+            <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileUpload} 
+                accept=".csv"
+                className="hidden" 
+            />
+            <Link to="/admin/products/new" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors">
+            <Plus size={18} /> Add Product
+            </Link>
+        </div>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+        <div className="p-2 bg-blue-100 rounded text-blue-600">
+            <FileSpreadsheet size={20} />
+        </div>
+        <div>
+            <h4 className="text-sm font-bold text-blue-900">CSV Import Guide</h4>
+            <p className="text-xs text-blue-700 mt-1">
+                To import products, upload a CSV file with the following column order (no headers required, but recommended):<br/>
+                <code className="bg-white px-1 rounded text-blue-800 border border-blue-200 mt-1 block w-fit">
+                    name, brand, category, description, baseImage, storage, color, condition, price, stock
+                </code>
+                Multiple rows with the same name will be grouped into one product with variants.
+            </p>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -45,6 +193,8 @@ export const AdminProductList = () => {
             <input 
               type="text" 
               placeholder="Search products..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
@@ -64,7 +214,7 @@ export const AdminProductList = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {products.map(product => {
+              {filteredProducts.map(product => {
                 // Find lowest price
                 const minPrice = Math.min(...product.variants.flatMap(v => v.prices.map(p => p.price)));
                 
@@ -125,7 +275,7 @@ export const AdminProductList = () => {
               })}
             </tbody>
           </table>
-          {products.length === 0 && (
+          {filteredProducts.length === 0 && (
              <div className="p-10 text-center text-slate-500">No products found.</div>
           )}
         </div>
