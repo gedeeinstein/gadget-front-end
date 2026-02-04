@@ -1,99 +1,183 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product, Order, OrderStatus, User, ActivityLog } from '../types';
-import { SAMPLE_PRODUCTS, SAMPLE_ORDERS, SAMPLE_USERS } from '../constants';
+import { api } from './api';
 
 interface StoreContextType {
   products: Product[];
   orders: Order[];
   users: User[];
   logs: ActivityLog[];
-  addProduct: (product: Product) => void;
-  bulkAddProducts: (products: Product[]) => void;
-  updateProduct: (id: string, product: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
-  updateOrderStatus: (id: string, status: OrderStatus) => void;
-  deleteOrder: (id: string) => void;
-  addUser: (user: User) => void;
-  updateUser: (id: string, user: Partial<User>) => void;
-  deleteUser: (id: string) => void;
-  logAction: (user: string, action: string, target: string, type?: ActivityLog['type']) => void;
+  isLoading: boolean;
+  addProduct: (product: Product) => Promise<void>;
+  bulkAddProducts: (products: Product[]) => Promise<void>;
+  updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+  updateOrderStatus: (id: string, status: OrderStatus) => Promise<void>;
+  deleteOrder: (id: string) => Promise<void>;
+  addUser: (user: User) => Promise<void>;
+  updateUser: (id: string, user: Partial<User>) => Promise<void>;
+  deleteUser: (id: string) => Promise<void>;
+  logAction: (user: string, action: string, target: string, type?: ActivityLog['type']) => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
-// Initial Mock Logs
-const INITIAL_LOGS: ActivityLog[] = [
-  { id: 'l1', user: 'Super Admin', action: 'System Login', target: 'Dashboard', timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(), type: 'info' },
-  { id: 'l2', user: 'Super Admin', action: 'Updated Stock', target: 'iPhone 15 Pro', timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(), type: 'success' },
-  { id: 'l3', user: 'Sales Staff', action: 'Created Order', target: '#ORD-004', timestamp: new Date(Date.now() - 1000 * 60 * 300).toISOString(), type: 'success' }
-];
-
 export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [products, setProducts] = useState<Product[]>(SAMPLE_PRODUCTS);
-  const [orders, setOrders] = useState<Order[]>(SAMPLE_ORDERS);
-  const [users, setUsers] = useState<User[]>(SAMPLE_USERS);
-  const [logs, setLogs] = useState<ActivityLog[]>(INITIAL_LOGS);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const logAction = (user: string, action: string, target: string, type: ActivityLog['type'] = 'info') => {
-    const newLog: ActivityLog = {
-      id: `log-${Date.now()}`,
-      user,
-      action,
-      target,
-      timestamp: new Date().toISOString(),
-      type
+  const refreshData = async () => {
+    try {
+      const [productsData, ordersData, usersData, logsData] = await Promise.all([
+        api.products.getAll(),
+        api.orders.getAll(),
+        api.users.getAll(),
+        api.logs.getAll()
+      ]);
+      setProducts(productsData);
+      setOrders(ordersData);
+      setUsers(usersData);
+      setLogs(logsData);
+    } catch (error) {
+      console.error("Failed to fetch initial data", error);
+    }
+  };
+
+  useEffect(() => {
+    const init = async () => {
+      setIsLoading(true);
+      await refreshData();
+      setIsLoading(false);
     };
-    setLogs(prev => [newLog, ...prev]);
+    init();
+  }, []);
+
+  const logAction = async (user: string, action: string, target: string, type: ActivityLog['type'] = 'info') => {
+    try {
+        const newLog: ActivityLog = {
+          id: `log-${Date.now()}`,
+          user,
+          action,
+          target,
+          timestamp: new Date().toISOString(),
+          type
+        };
+        // Optimistic update
+        setLogs(prev => [newLog, ...prev]);
+        await api.logs.create(newLog);
+    } catch (e) {
+        console.error("Failed to log action", e);
+    }
   };
 
   // Product Actions
-  const addProduct = (product: Product) => {
-    setProducts(prev => [product, ...prev]);
-    logAction('Super Admin', 'Created Product', product.name, 'success');
+  const addProduct = async (product: Product) => {
+    try {
+        const created = await api.products.create(product);
+        setProducts(prev => [created, ...prev]);
+        await logAction('Super Admin', 'Created Product', product.name, 'success');
+    } catch (e) {
+        console.error("Failed to add product", e);
+        throw e;
+    }
   };
 
-  const bulkAddProducts = (newProducts: Product[]) => {
-    setProducts(prev => [...newProducts, ...prev]);
-    logAction('Super Admin', 'Bulk Imported', `${newProducts.length} Products`, 'success');
+  const bulkAddProducts = async (newProducts: Product[]) => {
+    try {
+        // Mock bulk add by iterating (MirageJS/Mock Server limitation usually)
+        await Promise.all(newProducts.map(p => api.products.create(p)));
+        // Refresh full list to be safe
+        const updatedProducts = await api.products.getAll();
+        setProducts(updatedProducts);
+        await logAction('Super Admin', 'Bulk Imported', `${newProducts.length} Products`, 'success');
+    } catch (e) {
+        console.error("Failed to bulk add products", e);
+        throw e;
+    }
   };
 
-  const updateProduct = (id: string, updates: Partial<Product>) => {
-    setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
-    const productName = products.find(p => p.id === id)?.name || 'Unknown Product';
-    logAction('Super Admin', 'Updated Product', productName, 'info');
+  const updateProduct = async (id: string, updates: Partial<Product>) => {
+    try {
+        const updated = await api.products.update(id, updates);
+        setProducts(prev => prev.map(p => p.id === id ? updated : p));
+        const productName = products.find(p => p.id === id)?.name || 'Unknown Product';
+        await logAction('Super Admin', 'Updated Product', productName, 'info');
+    } catch (e) {
+        console.error("Failed to update product", e);
+        throw e;
+    }
   };
 
-  const deleteProduct = (id: string) => {
-    const productName = products.find(p => p.id === id)?.name || 'Unknown Product';
-    setProducts(prev => prev.filter(p => p.id !== id));
-    logAction('Super Admin', 'Deleted Product', productName, 'danger');
+  const deleteProduct = async (id: string) => {
+    try {
+        const productName = products.find(p => p.id === id)?.name || 'Unknown Product';
+        await api.products.delete(id);
+        setProducts(prev => prev.filter(p => p.id !== id));
+        await logAction('Super Admin', 'Deleted Product', productName, 'danger');
+    } catch (e) {
+        console.error("Failed to delete product", e);
+        throw e;
+    }
   };
 
   // Order Actions
-  const updateOrderStatus = (id: string, status: OrderStatus) => {
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
-    logAction('Super Admin', 'Updated Status', `Order #${id} to ${status}`, 'warning');
+  const updateOrderStatus = async (id: string, status: OrderStatus) => {
+    try {
+        const updated = await api.orders.updateStatus(id, status);
+        setOrders(prev => prev.map(o => o.id === id ? updated : o));
+        await logAction('Super Admin', 'Updated Status', `Order #${id} to ${status}`, 'warning');
+    } catch (e) {
+        console.error("Failed to update order status", e);
+        throw e;
+    }
   };
 
-  const deleteOrder = (id: string) => {
-    setOrders(prev => prev.filter(o => o.id !== id));
-    logAction('Super Admin', 'Deleted Order', `#${id}`, 'danger');
+  const deleteOrder = async (id: string) => {
+    try {
+        await api.orders.delete(id);
+        setOrders(prev => prev.filter(o => o.id !== id));
+        await logAction('Super Admin', 'Deleted Order', `#${id}`, 'danger');
+    } catch (e) {
+        console.error("Failed to delete order", e);
+        throw e;
+    }
   };
 
   // User Actions
-  const addUser = (user: User) => {
-    setUsers(prev => [user, ...prev]);
-    logAction('Super Admin', 'Created User', user.name, 'success');
+  const addUser = async (user: User) => {
+    try {
+        const created = await api.users.create(user);
+        setUsers(prev => [created, ...prev]);
+        await logAction('Super Admin', 'Created User', user.name, 'success');
+    } catch (e) {
+        console.error("Failed to add user", e);
+        throw e;
+    }
   };
 
-  const updateUser = (id: string, updates: Partial<User>) => {
-    setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u));
-    logAction('Super Admin', 'Updated User', `ID: ${id}`, 'info');
+  const updateUser = async (id: string, updates: Partial<User>) => {
+    try {
+        const updated = await api.users.update(id, updates);
+        setUsers(prev => prev.map(u => u.id === id ? updated : u));
+        await logAction('Super Admin', 'Updated User', `ID: ${id}`, 'info');
+    } catch (e) {
+        console.error("Failed to update user", e);
+        throw e;
+    }
   };
 
-  const deleteUser = (id: string) => {
-    setUsers(prev => prev.filter(u => u.id !== id));
-    logAction('Super Admin', 'Deleted User', `ID: ${id}`, 'danger');
+  const deleteUser = async (id: string) => {
+    try {
+        await api.users.delete(id);
+        setUsers(prev => prev.filter(u => u.id !== id));
+        await logAction('Super Admin', 'Deleted User', `ID: ${id}`, 'danger');
+    } catch (e) {
+        console.error("Failed to delete user", e);
+        throw e;
+    }
   };
 
   return (
@@ -102,6 +186,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       orders, 
       users,
       logs,
+      isLoading,
       addProduct,
       bulkAddProducts,
       updateProduct, 

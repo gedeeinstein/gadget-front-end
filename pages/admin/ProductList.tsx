@@ -14,9 +14,13 @@ export const AdminProductList = () => {
   const [quickEditProduct, setQuickEditProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
-      deleteProduct(id);
+      try {
+        await deleteProduct(id);
+      } catch (error) {
+        alert("Failed to delete product.");
+      }
     }
   };
 
@@ -24,10 +28,14 @@ export const AdminProductList = () => {
     setQuickEditProduct(JSON.parse(JSON.stringify(product))); // Deep copy
   };
 
-  const handleQuickSave = () => {
+  const handleQuickSave = async () => {
     if (quickEditProduct) {
-      updateProduct(quickEditProduct.id, quickEditProduct);
-      setQuickEditProduct(null);
+      try {
+        await updateProduct(quickEditProduct.id, quickEditProduct);
+        setQuickEditProduct(null);
+      } catch (error) {
+        alert("Failed to update product.");
+      }
     }
   };
 
@@ -126,8 +134,11 @@ export const AdminProductList = () => {
         const newProducts = Object.values(tempProducts);
         
         if (newProducts.length > 0) {
-            bulkAddProducts(newProducts);
-            alert(`Successfully imported ${newProducts.length} products with ${lines.length - 1} rows of data.`);
+            bulkAddProducts(newProducts).then(() => {
+                alert(`Successfully imported ${newProducts.length} products with ${lines.length - 1} rows of data.`);
+            }).catch(() => {
+                alert("Failed to import products.");
+            });
         } else {
             alert("No valid product data found in CSV.");
         }

@@ -136,7 +136,7 @@ export const AdminProductForm = () => {
     setFormData(prev => ({ ...prev, variants: newVariants }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Convert specs list back to object
@@ -151,12 +151,16 @@ export const AdminProductForm = () => {
         slug: formData.name.toLowerCase().replace(/\s+/g, '-') // Simple slug gen
     };
 
-    if (id) {
-      updateProduct(id, productToSave);
-    } else {
-      addProduct(productToSave);
+    try {
+      if (id) {
+        await updateProduct(id, productToSave);
+      } else {
+        await addProduct(productToSave);
+      }
+      navigate('/admin/products');
+    } catch (error) {
+      alert("Failed to save product. Please try again.");
     }
-    navigate('/admin/products');
   };
 
   return (
