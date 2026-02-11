@@ -51,6 +51,14 @@ export interface CartItem {
 
 export type OrderStatus = 'Pending' | 'Processing' | 'Shipped' | 'Completed' | 'Cancelled';
 
+export interface OrderTimelineEvent {
+  id: string;
+  status: OrderStatus;
+  date: string;
+  user: string;
+  note?: string;
+}
+
 export interface Order {
   id: string;
   customerName: string;
@@ -59,6 +67,8 @@ export interface Order {
   total: number;
   status: OrderStatus;
   items: CartItem[];
+  notes?: string;
+  timeline: OrderTimelineEvent[];
 }
 
 export type Role = 'Admin' | 'Editor' | 'Viewer';

@@ -154,7 +154,22 @@ export const SAMPLE_ORDERS: Order[] = [
     date: '2024-03-10',
     total: 21999000,
     status: 'Pending',
-    items: []
+    items: [
+      {
+        productId: 'p2',
+        variantId: 'v2-512-black',
+        condition: 'New Official',
+        name: 'Samsung Galaxy S24 Ultra',
+        image: 'https://picsum.photos/id/24/600/600',
+        specSummary: '512GB - Titanium Black',
+        price: 21999000,
+        quantity: 1
+      }
+    ],
+    notes: '',
+    timeline: [
+      { id: 't1', status: 'Pending', date: '2024-03-10T10:30:00Z', user: 'System', note: 'Order placed by customer' }
+    ]
   },
   {
     id: 'ORD-002',
@@ -163,7 +178,25 @@ export const SAMPLE_ORDERS: Order[] = [
     date: '2024-03-09',
     total: 15500000,
     status: 'Completed',
-    items: []
+    items: [
+      {
+        productId: 'p1',
+        variantId: 'v1-128-nat',
+        condition: 'Second Ex-Box',
+        name: 'iPhone 15 Pro',
+        image: 'https://picsum.photos/id/88/600/600',
+        specSummary: '128GB - Natural Titanium',
+        price: 15500000,
+        quantity: 1
+      }
+    ],
+    notes: 'Customer requested express delivery.',
+    timeline: [
+      { id: 't5', status: 'Completed', date: '2024-03-10T11:00:00Z', user: 'System', note: 'Order received by customer' },
+      { id: 't4', status: 'Shipped', date: '2024-03-09T14:00:00Z', user: 'Admin', note: 'Package handed to courier' },
+      { id: 't3', status: 'Processing', date: '2024-03-09T10:00:00Z', user: 'Admin', note: 'Payment verified' },
+      { id: 't2', status: 'Pending', date: '2024-03-09T09:00:00Z', user: 'System', note: 'Order placed' }
+    ]
   },
   {
     id: 'ORD-003',
@@ -172,7 +205,24 @@ export const SAMPLE_ORDERS: Order[] = [
     date: '2024-03-08',
     total: 9499000,
     status: 'Shipped',
-    items: []
+    items: [
+      {
+        productId: 'p3',
+        variantId: 'v3-64-blue',
+        condition: 'New Official',
+        name: 'iPad Air 5',
+        image: 'https://picsum.photos/id/119/600/600',
+        specSummary: '64GB - Blue',
+        price: 9499000,
+        quantity: 1
+      }
+    ],
+    notes: '',
+    timeline: [
+      { id: 't8', status: 'Shipped', date: '2024-03-09T09:00:00Z', user: 'Admin' },
+      { id: 't7', status: 'Processing', date: '2024-03-08T16:00:00Z', user: 'Admin' },
+      { id: 't6', status: 'Pending', date: '2024-03-08T15:30:00Z', user: 'System', note: 'Order placed' }
+    ]
   }
 ];
 

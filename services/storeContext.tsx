@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Product, Order, OrderStatus, User, ActivityLog } from '../types';
+import { Product, Order, OrderStatus, User, ActivityLog, OrderTimelineEvent } from '../types';
 import { SAMPLE_PRODUCTS, SAMPLE_ORDERS, SAMPLE_USERS } from '../constants';
 
 interface StoreContextType {
@@ -12,6 +12,7 @@ interface StoreContextType {
   updateProduct: (id: string, product: Partial<Product>) => void;
   deleteProduct: (id: string) => void;
   updateOrderStatus: (id: string, status: OrderStatus) => void;
+  updateOrderNotes: (id: string, notes: string) => void;
   deleteOrder: (id: string) => void;
   addUser: (user: User) => void;
   updateUser: (id: string, user: Partial<User>) => void;
@@ -71,8 +72,29 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   // Order Actions
   const updateOrderStatus = (id: string, status: OrderStatus) => {
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+    setOrders(prev => prev.map(o => {
+      if (o.id === id) {
+        const newEvent: OrderTimelineEvent = {
+          id: `t-${Date.now()}`,
+          status,
+          date: new Date().toISOString(),
+          user: 'Super Admin',
+          note: `Status updated to ${status}`
+        };
+        return {
+          ...o,
+          status,
+          timeline: [newEvent, ...o.timeline]
+        };
+      }
+      return o;
+    }));
     logAction('Super Admin', 'Updated Status', `Order #${id} to ${status}`, 'warning');
+  };
+
+  const updateOrderNotes = (id: string, notes: string) => {
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, notes } : o));
+    logAction('Super Admin', 'Updated Notes', `Order #${id}`, 'info');
   };
 
   const deleteOrder = (id: string) => {
@@ -107,6 +129,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       updateProduct, 
       deleteProduct, 
       updateOrderStatus,
+      updateOrderNotes,
       deleteOrder,
       addUser,
       updateUser,

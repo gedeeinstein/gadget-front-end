@@ -1,16 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../../services/storeContext';
 import { formatRupiah } from '../../constants';
-import { ArrowLeft, Printer, Mail, Phone, MapPin, Package, User } from 'lucide-react';
+import {
+  ArrowLeft, Printer, Mail, Phone, MapPin, Package, User,
+  CheckCircle2, Clock, Truck, XCircle, FileText
+} from 'lucide-react';
 import { OrderStatus } from '../../types';
 
 export const AdminOrderDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { orders, updateOrderStatus } = useStore();
+  const { orders, updateOrderStatus, updateOrderNotes } = useStore();
   
   const order = orders.find(o => o.id === id);
+  const [notes, setNotes] = useState(order?.notes || '');
+
+  useEffect(() => {
+    if (order) {
+      setNotes(order.notes || '');
+    }
+  }, [order?.notes]);
 
   if (!order) {
     return (
@@ -26,6 +36,10 @@ export const AdminOrderDetail = () => {
     updateOrderStatus(order.id, newStatus as OrderStatus);
   };
 
+  const handleSaveNote = () => {
+    updateOrderNotes(order.id, notes);
+  };
+
   const getStatusColor = (status: OrderStatus) => {
     switch (status) {
       case 'Completed': return 'bg-green-100 text-green-700 border-green-200';
@@ -34,6 +48,17 @@ export const AdminOrderDetail = () => {
       case 'Shipped': return 'bg-purple-100 text-purple-700 border-purple-200';
       case 'Cancelled': return 'bg-red-100 text-red-700 border-red-200';
       default: return 'bg-slate-100 text-slate-700 border-slate-200';
+    }
+  };
+
+  const getTimelineIcon = (status: OrderStatus) => {
+    switch (status) {
+      case 'Pending': return <Clock size={16} className="text-yellow-600" />;
+      case 'Processing': return <FileText size={16} className="text-blue-600" />;
+      case 'Shipped': return <Truck size={16} className="text-purple-600" />;
+      case 'Completed': return <CheckCircle2 size={16} className="text-green-600" />;
+      case 'Cancelled': return <XCircle size={16} className="text-red-600" />;
+      default: return <Package size={16} className="text-slate-600" />;
     }
   };
 
@@ -136,16 +161,49 @@ export const AdminOrderDetail = () => {
                   </div>
               </div>
 
-              {/* Order Timeline / Notes Placeholder */}
+              {/* Order Timeline */}
               <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="font-bold text-slate-900 mb-4">Internal Notes</h3>
+                  <h3 className="font-bold text-slate-900 mb-6 flex items-center gap-2">
+                    <Clock size={18} className="text-slate-400" /> Order Timeline
+                  </h3>
+                  <div className="space-y-6 relative before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
+                    {order.timeline.map((event, idx) => (
+                      <div key={event.id} className="relative pl-10">
+                        <div className="absolute left-0 top-0 w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center z-10">
+                          {getTimelineIcon(event.status)}
+                        </div>
+                        <div>
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+                            <h4 className="font-bold text-slate-900 text-sm">{event.note || `Status changed to ${event.status}`}</h4>
+                            <span className="text-xs text-slate-500">{new Date(event.date).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                          </div>
+                          <p className="text-xs text-slate-500">By {event.user}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+              </div>
+
+              {/* Internal Notes */}
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                  <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <FileText size={18} className="text-slate-400" /> Internal Notes
+                  </h3>
                   <textarea 
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
                     className="w-full border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none min-h-[100px]"
                     placeholder="Add a note for this order..."
                   ></textarea>
-                  <button className="mt-2 text-sm text-white bg-slate-900 px-4 py-2 rounded-lg font-medium hover:bg-slate-800 transition-colors">
-                      Save Note
-                  </button>
+                  <div className="mt-3 flex justify-between items-center">
+                    <p className="text-xs text-slate-400 italic">Notes are only visible to staff.</p>
+                    <button
+                      onClick={handleSaveNote}
+                      className="text-sm text-white bg-slate-900 px-6 py-2 rounded-lg font-medium hover:bg-slate-800 transition-colors shadow-sm"
+                    >
+                        Save Note
+                    </button>
+                  </div>
               </div>
           </div>
 
