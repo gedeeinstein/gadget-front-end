@@ -18,6 +18,10 @@ interface FlattenedProduct {
   price: number;
   stock: 'ready' | 'low' | 'empty';
   image: string;
+  // Pre-computed lowercase for search optimization
+  _nameLower: string;
+  _storageLower: string;
+  _colorLower: string;
 }
 
 export const Pricelist = () => {
@@ -52,7 +56,10 @@ export const Pricelist = () => {
             condition: tier.condition,
             price: tier.promoPrice || tier.price,
             stock: tier.stock,
-            image: variant.image || product.baseImage
+            image: variant.image || product.baseImage,
+            _nameLower: product.name.toLowerCase(),
+            _storageLower: variant.storage.toLowerCase(),
+            _colorLower: variant.color.toLowerCase()
           });
         });
       });
@@ -85,9 +92,9 @@ export const Pricelist = () => {
     if (search) {
       const lowerSearch = search.toLowerCase();
       data = data.filter(item => 
-        item.name.toLowerCase().includes(lowerSearch) || 
-        item.storage.toLowerCase().includes(lowerSearch) ||
-        item.color.toLowerCase().includes(lowerSearch)
+        item._nameLower.includes(lowerSearch) ||
+        item._storageLower.includes(lowerSearch) ||
+        item._colorLower.includes(lowerSearch)
       );
     }
 
