@@ -52,7 +52,7 @@ export const AdminProductForm = () => {
     if (id) {
       const product = products.find(p => p.id === id);
       if (product) {
-        setFormData(JSON.parse(JSON.stringify(product))); // Deep copy
+        setFormData(structuredClone(product)); // Modern deep copy
         setSpecsList(Object.entries(product.specs).map(([key, value]) => ({ key, value })));
       }
     } else {

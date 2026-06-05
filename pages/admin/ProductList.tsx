@@ -21,7 +21,7 @@ export const AdminProductList = () => {
   };
 
   const openQuickEdit = (product: Product) => {
-    setQuickEditProduct(JSON.parse(JSON.stringify(product))); // Deep copy
+    setQuickEditProduct(structuredClone(product)); // Modern deep copy
   };
 
   const handleQuickSave = () => {
